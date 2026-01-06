@@ -1,17 +1,30 @@
+"""
+Functions to load and clean CSV rating data.
+
+This module provides utilities to:
+- Load CSV files containing user-product ratings.
+- Clean data by handling missing values, invalid ratings, and timestamps.
+- Return data in a format suitable for recommendation algorithms.
+
+Example:
+    data = load_and_clean_data("data/ratings.csv")
+"""
+
 import csv
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-# ------------------------------------------------------------------
+
 # Data loading
-# ------------------------------------------------------------------
 def load_all_data(file_path):
+    """
+    Load all user–item rating data from a CSV file.
+    """
     rows = []
     with open(file_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(
-            f,
-            fieldnames=["user_id", "product_id", "rating", "timestamp"]
+            f, fieldnames=["user_id", "product_id", "rating", "timestamp"]
         )
         next(reader)  # skip header
 
@@ -19,12 +32,6 @@ def load_all_data(file_path):
             row["rating"] = float(row["rating"])
             row["timestamp"] = int(row["timestamp"])
             rows.append(row)
-            ## try:
-            ##     row["rating"] = float(row["rating"])
-            ##     row["timestamp"] = datetime.fromtimestamp(int(row["timestamp"]))
-            ##     rows.append(row)
-            ## except (ValueError, TypeError):
-            ##     continue
     return rows
 
 
@@ -60,7 +67,6 @@ def load_data(path: str) -> List[Dict[str, Any]]:
     -----
     - The function assumes the first row of the CSV file is a header.
     - Rows with empty fields or conversion errors are silently ignored.
-    - No sorting or deduplication is performed.
 
     Examples
     --------
@@ -87,19 +93,18 @@ def load_data(path: str) -> List[Dict[str, Any]]:
                 timestamp = int_cast(r[idx_map["timestamp"]])
             except (ValueError, TypeError, OSError):
                 continue
-            rows.append({
-                "user_id": r[idx_map["user_id"]],
-                "product_id": r[idx_map["product_id"]],
-                "rating": rating,
-                "timestamp": timestamp
-            })
+            rows.append(
+                {
+                    "user_id": r[idx_map["user_id"]],
+                    "product_id": r[idx_map["product_id"]],
+                    "rating": rating,
+                    "timestamp": timestamp,
+                }
+            )
     return rows
 
 
-
-# ------------------------------------------------------------------
 # Data cleaning
-# ------------------------------------------------------------------
 def clean_data_slow(rows: List[Dict]) -> List[Dict]:
     """
     Impute invalid ratings (-1, 99) in a list of dicts
@@ -109,10 +114,12 @@ def clean_data_slow(rows: List[Dict]) -> List[Dict]:
     """
     # Compute min positive timestamp
     positive_timestamps = [r["timestamp"] for r in rows if r["timestamp"] > 0]
-    min_positive_ts = min(positive_timestamps) if positive_timestamps else 1  # fallback to 1
+    min_positive_ts = (
+        min(positive_timestamps) if positive_timestamps else 1
+    )  # fallback to 1
 
     # Collect ratings for global/user/product, ignoring invalid ratings
-    valid_ratings = [r['rating'] for r in rows if 0 <= r['rating'] <= 5]
+    valid_ratings = [r["rating"] for r in rows if 0 <= r["rating"] <= 5]
 
     if not valid_ratings:
         global_mean = 2.5
@@ -122,32 +129,31 @@ def clean_data_slow(rows: List[Dict]) -> List[Dict]:
     # Compute user means
     user_ratings = {}
     for r in rows:
-        if 0 <= r['rating'] <= 5:
-            user_ratings.setdefault(r['user_id'], []).append(r['rating'])
-    user_mean = {u: sum(vals)/len(vals) for u, vals in user_ratings.items()}
+        if 0 <= r["rating"] <= 5:
+            user_ratings.setdefault(r["user_id"], []).append(r["rating"])
+    user_mean = {u: sum(vals) / len(vals) for u, vals in user_ratings.items()}
 
     # Compute item (product) means
     item_ratings = {}
     for r in rows:
-        if 0 <= r['rating'] <= 5:
-            item_ratings.setdefault(r['product_id'], []).append(r['rating'])
-    item_mean = {i: sum(vals)/len(vals) for i, vals in item_ratings.items()}
+        if 0 <= r["rating"] <= 5:
+            item_ratings.setdefault(r["product_id"], []).append(r["rating"])
+    item_mean = {i: sum(vals) / len(vals) for i, vals in item_ratings.items()}
 
     # Imputation
     for r in rows:
-        ## r = rows[0]
         # Replace timestamp 0 with min positive timestamp
         ts = r["timestamp"] if r["timestamp"] > 0 else min_positive_ts
         ts_dt = datetime.fromtimestamp(ts, tz=timezone.utc)
-        r['timestamp'] = ts_dt
+        r["timestamp"] = ts_dt
 
-        rating = r['rating']
+        rating = r["rating"]
         if not 0 <= rating <= 5:  # -1, 99, or other invalid
-            u_mean = user_mean.get(r['user_id'], global_mean)
-            i_mean = item_mean.get(r['product_id'], global_mean)
-            r['rating'] = global_mean + (u_mean - global_mean) + (i_mean - global_mean)
+            u_mean = user_mean.get(r["user_id"], global_mean)
+            i_mean = item_mean.get(r["product_id"], global_mean)
+            r["rating"] = global_mean + (u_mean - global_mean) + (i_mean - global_mean)
             # Clip to 0-5
-            r['rating'] = max(0, min(5, r['rating']))
+            r["rating"] = max(0, min(5, r["rating"]))
     return rows
 
 
@@ -168,7 +174,7 @@ def clean_data(rows: List[Dict]) -> List[Dict]:
     user_counts = defaultdict(int)
     item_sums = defaultdict(float)
     item_counts = defaultdict(int)
-    min_positive_ts = float('inf')
+    min_positive_ts = float("inf")
 
     # First pass: aggregate valid ratings and find min positive timestamp
     for r in rows:
@@ -185,7 +191,7 @@ def clean_data(rows: List[Dict]) -> List[Dict]:
             item_sums[r["product_id"]] += rating
             item_counts[r["product_id"]] += 1
 
-    min_positive_ts = min_positive_ts if min_positive_ts != float('inf') else 1
+    min_positive_ts = min_positive_ts if min_positive_ts != float("inf") else 1
     global_mean = global_sum / global_count if global_count > 0 else 2.5
 
     # Compute user/item means
@@ -204,17 +210,17 @@ def clean_data(rows: List[Dict]) -> List[Dict]:
         if not 0 <= rating <= 5:
             u_mean = user_mean.get(r["user_id"], global_mean)
             i_mean = item_mean.get(r["product_id"], global_mean)
-            r["rating"] = max(0, min(5, global_mean + (u_mean - global_mean) + (i_mean - global_mean)))
+            r["rating"] = max(
+                0, min(5, global_mean + (u_mean - global_mean) + (i_mean - global_mean))
+            )
 
     return rows
 
 
 def load_and_clean_data(path: str) -> List[Dict[str, Any]]:
+    """
+    Function to load and clean CSV rating data.
+    """
     rows = load_data(path)
     rows = clean_data(rows)
     return rows
-
-
-def main():
-    import timeit
-    timeit.timeit(lambda: load_data(path="./data/ratings.csv"), number = 100)

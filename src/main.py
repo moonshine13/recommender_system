@@ -1,9 +1,18 @@
-from fastapi import FastAPI
-from src.api.endpoints import user_rec, model_rec, top_products
+"""
+Main entrypoint for the FastAPI application.
+
+This module initializes the FastAPI app and includes all endpoints
+for user-based, model-based, and top-N product recommendations.
+
+Usage:
+    uvicorn src.main:app --host 0.0.0.0 --port 8000
+"""
+
 from fastapi import FastAPI
 
+from src.api.endpoints import model_rec, top_products, user_rec
+
 ## TODO add readme
-## TODO add docstrings
 
 app = FastAPI(title="Recommendation API")
 

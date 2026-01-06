@@ -1,57 +1,18 @@
-import argparse
-import sys
-from typing import List, Dict,Any
+"""
+Compute top-N products based on user ratings and activity.
+
+This module provides functions to:
+- Aggregate ratings over a specified period.
+- Filter products by minimum number of ratings.
+- Compute and return the top-N products based on average ratings.
+"""
+
+from collections import defaultdict
 from datetime import timedelta
 from heapq import nlargest
-from collections import defaultdict
+from typing import Any, Dict, List
 
 from src.data.read_and_clean_data import load_and_clean_data
-# ----------------------------
-# Strategy 1: Top-N Products
-# ----------------------------
-
-def top_n_products_slow(
-    data: List[Dict[str, Any]],
-    days: int = 365,
-    n: int = 5,
-    min_ratings: int = 10,
-):
-    # Find latest timestamp in database
-    max_ts = max(row["timestamp"] for row in data)
-    cutoff = max_ts - timedelta(days=days)
-
-    # Filter recent records
-    recent = (row for row in data if row["timestamp"] >= cutoff)
-
-    # Aggregate ratings per product
-    agg = {}
-    for row in recent:
-        pid = row["product_id"]
-        rating = row["rating"]
-
-        if pid not in agg:
-            agg[pid] = {"sum": 0.0, "count": 0}
-
-        agg[pid]["sum"] += rating
-        agg[pid]["count"] += 1
-
-    # Compute averages and apply min_ratings filter
-    results = []
-    for pid, stats in agg.items():
-        if stats["count"] >= min_ratings:
-            results.append(
-                {
-                    "product_id": pid,
-                    "avg_rating": round(stats["sum"] / stats["count"],2),
-                    "count": stats["count"],
-                }
-            )
-
-    # Sort by average rating (descending)
-    results.sort(key=lambda x: x["avg_rating"], reverse=True)
-
-    # Return top N
-    return results[:n]
 
 
 def top_n_products(
@@ -60,6 +21,19 @@ def top_n_products(
     n: int = 5,
     min_ratings: int = 10,
 ):
+    """
+    Compute the top-N products based on recent ratings.
+
+    Args:
+        data (list of dict): List of ratings with keys "user_id", "product_id", "rating", "timestamp".
+        days (int, optional): Number of past days to consider. Defaults to 365.
+        n (int, optional): Number of top products to return. Defaults to 5.
+        min_ratings (int, optional): Minimum number of ratings a product must have to be considered. Defaults to 10.
+
+    Returns:
+        list of dict: Top-N products with keys "product_id", "avg_rating", and "count",
+                      sorted by descending average rating.
+    """
     if not data:
         return []
 
@@ -92,18 +66,25 @@ def top_n_products(
     return top_n
 
 
-def main(
+def top_n_products_run(
     path: str,
     days: int = 365,
     min_ratings: int = 10,
     n: int = 5,
 ):
+    """
+    Compute top-N products from a CSV file of ratings.
+
+    Args:
+        path (str): Path to the CSV file containing ratings.
+        days (int, optional): Number of past days to consider. Defaults to 365.
+        min_ratings (int, optional): Minimum number of ratings a product must have. Defaults to 10.
+        n (int, optional): Number of top products to return. Defaults to 5.
+
+    Returns:
+        list of dict: Top-N products with keys "product_id", "avg_rating", and "count".
+    """
     data_lst = load_and_clean_data(path)
 
-    top_n = top_n_products(
-        data_lst,
-        days=days,
-        n=n,
-        min_ratings=min_ratings
-    )
+    top_n = top_n_products(data_lst, days=days, n=n, min_ratings=min_ratings)
     return top_n

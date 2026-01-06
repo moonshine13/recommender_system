@@ -1,40 +1,25 @@
-import csv
+"""
+Descriptive statistics utilities for exploratory data analysis (EDA).
+
+This module provides functions to:
+- Compute summary statistics for numeric and categorical data.
+- Analyze distributions, counts, and basic aggregates.
+- Support data exploration before building recommendation models.
+"""
+
 import argparse
 from collections import Counter, defaultdict
+
 import matplotlib.pyplot as plt
-## from libs.read_and_clean_data import load_data
 
-# ------------------------------------------------------------------
-# Data loading
-# ------------------------------------------------------------------
-
-def load_all_data(file_path):
-    rows = []
-    with open(file_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(
-            f,
-            fieldnames=["user_id", "product_id", "rating", "timestamp"]
-        )
-        next(reader)  # skip header
-
-        for row in reader:
-            row["rating"] = float(row["rating"])
-            row["timestamp"] = int(row["timestamp"])
-            rows.append(row)
-            ## try:
-            ##     row["rating"] = float(row["rating"])
-            ##     row["timestamp"] = datetime.fromtimestamp(int(row["timestamp"]))
-            ##     rows.append(row)
-            ## except (ValueError, TypeError):
-            ##     continue
-    return rows
+from src.data.read_and_clean_data import load_all_data
 
 
-# ------------------------------------------------------------------
 # Analysis helpers
-# ------------------------------------------------------------------
-
 def analyze_missing(rows):
+    """
+    Analyze missings
+    """
     print("Missing values per column:")
     counts = Counter()
     for r in rows:
@@ -45,7 +30,11 @@ def analyze_missing(rows):
         print(f"{k}: {counts[k]}")
     print("")
 
+
 def basic_stats(rows):
+    """
+    Calculate basic descriptive stats
+    """
     ratings = [float(r["rating"]) for r in rows]
     timestamps = [int(r["timestamp"]) for r in rows]
 
@@ -58,11 +47,12 @@ def basic_stats(rows):
     print(f"Timestamp max: {max(timestamps)}")
     print("")
 
-# ------------------------------------------------------------------
-# Plots
-# ------------------------------------------------------------------
 
+# Plots
 def plot_histogram_timestamps(rows):
+    """
+    Show timestamps histogram
+    """
     timestamps = [r["timestamp"] for r in rows]
     plt.figure(figsize=(8, 5))
     plt.hist(timestamps, bins=20)
@@ -73,6 +63,9 @@ def plot_histogram_timestamps(rows):
 
 
 def plot_rating_counts(rows):
+    """
+    Show ratings counts
+    """
     rating_counts = Counter(str(r["rating"]) for r in rows)
     ratings = sorted(rating_counts.keys())
     counts = [rating_counts[r] for r in ratings]
@@ -85,6 +78,9 @@ def plot_rating_counts(rows):
 
 
 def plot_ratings_per_user(rows):
+    """
+    Show ratings per user counts
+    """
     user_counts = Counter(str(r["user_id"]) for r in rows)
 
     plt.figure(figsize=(8, 5))
@@ -96,6 +92,9 @@ def plot_ratings_per_user(rows):
 
 
 def plot_ratings_per_product(rows):
+    """
+    Show ratings per product counts
+    """
     product_counts = Counter(r["product_id"] for r in rows)
     top_100 = product_counts.most_common(100)
 
@@ -110,11 +109,11 @@ def plot_ratings_per_product(rows):
     plt.show()
 
 
-# ------------------------------------------------------------------
 # Data quality checks
-# ------------------------------------------------------------------
-
 def check_zero_timestamps(rows):
+    """
+    Check rows with 0 timestamps
+    """
     zeros = [r for r in rows if r["timestamp"] == 0]
 
     print("Rows with timestamp 0:")
@@ -126,7 +125,11 @@ def check_zero_timestamps(rows):
         print("Timestamp 2nd Min:", min(non_zero))
     print("")
 
+
 def check_invalid_ratings(rows):
+    """
+    Check rows with invalid ratings
+    """
     invalid = [r for r in rows if r["rating"] in (99, -1)]
     print("Invalid ratings:")
     for r in invalid:
@@ -134,7 +137,11 @@ def check_invalid_ratings(rows):
     print("Number of invalid ratings:", len(invalid))
     print("")
 
+
 def check_duplicates(rows):
+    """
+    Check duplicated ratings
+    """
     seen = defaultdict(list)
     for r in rows:
         key = (r["user_id"], r["product_id"])
@@ -148,12 +155,11 @@ def check_duplicates(rows):
             print(r)
     print("")
 
-# ------------------------------------------------------------------
-# Main
-# ------------------------------------------------------------------
 
 def main():
-    ## TODO: add number of valid ratings per user
+    """
+    Run EDA
+    """
     parser = argparse.ArgumentParser(description="CLI Exploratory Data Analysis")
     parser.add_argument("--file", type=str, default="./data/ratings.csv")
     args = parser.parse_args()
