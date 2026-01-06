@@ -24,6 +24,8 @@ venv\Scripts\activate
 ### Install dependencies
 ```bash
 pip install -r requirements-dev.txt
+# or using pyproject.toml
+pip install .
 ```
 
 ---
@@ -76,3 +78,16 @@ docker run -it --rm -p 8000:8000 -v C:/repos/recommender_system/data:/data recom
 ```
 
 Swagger UI: [http://127.0.0.1:8000/docs]
+
+## Testing
+
+```bash
+pytest tests/
+```
+
+## Development Notes
+
+Configuration is centralized in pyproject.toml
+Code style enforced with Black and isort
+Linting with pylint
+Security scanning with bandit

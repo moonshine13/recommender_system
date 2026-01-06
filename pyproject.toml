@@ -1,0 +1,38 @@
+[project]
+name = "recommender_system"
+version = "0.1.0"
+description = "A recommendation system with user-based, time-aware user-based, model-based recommendations, and top-N products."
+authors = [
+    { name="Adam Kosewski", email="akosew@poczta.onet.pl" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "numpy==2.3.3",
+    "fastapi==0.116.2",
+    "uvicorn==0.35.0",
+    "matplotlib==3.10.8"
+]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# --- Tool configurations ---
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint]
+disable = ["C0114"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--maxfail=3 --disable-warnings -q"
+
+[tool.bandit]
+skips = ["B101"]
