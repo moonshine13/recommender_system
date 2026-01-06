@@ -10,6 +10,7 @@ This module provides functions to:
 
 import argparse
 import pickle
+import os
 
 from src.data.read_and_clean_data import load_and_clean_data
 from src.models.timesvdpp import TimeSVDppVectorized
@@ -46,7 +47,7 @@ def main(path: str, out_path: str):
     print("Test Ratings:\n", len(test_ratings))
 
     model = None
-    model = TimeSVDppVectorized(n_factors=10, n_epochs=50, lr=0.01, reg=0.05)
+    model = TimeSVDppVectorized(n_factors=20, n_epochs=50, lr=0.01, reg=0.05)
 
     model.fit(train_ratings, test_ratings)
 
@@ -54,7 +55,9 @@ def main(path: str, out_path: str):
     model.item_map = item_map
     model.t_min = t_min
     model.t_max = t_max
-
+    
+    # Ensure the parent folder exists
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "wb") as f:
         pickle.dump(model, f)
 

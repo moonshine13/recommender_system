@@ -94,4 +94,3 @@ Code style enforced with Black and isort
 Linting with pylint
 
 Security scanning with bandit
-
