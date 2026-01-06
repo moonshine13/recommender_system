@@ -88,6 +88,10 @@ pytest tests/
 ## Development Notes
 
 Configuration is centralized in pyproject.toml
+
 Code style enforced with Black and isort
+
 Linting with pylint
+
 Security scanning with bandit
+
