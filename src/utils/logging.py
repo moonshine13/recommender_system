@@ -1,0 +1,38 @@
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+
+# Create logger
+logger = logging.getLogger("recommender_app")
+logger.setLevel(logging.INFO)  # set minimum level to log
+
+# ------------------------
+# Rotating File Handler
+# ------------------------
+file_handler = RotatingFileHandler(
+    "./logs/app.log",          # log file
+    maxBytes=5*1024*1024, # 5 MB per file
+    backupCount=3         # keep last 3 logs
+)
+file_formatter = logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+file_handler.setFormatter(file_formatter)
+file_handler.setLevel(logging.INFO)      # only INFO+ to file
+
+# ------------------------
+# Stream Handler (console)
+# ------------------------
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_formatter = logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"
+)
+stream_handler.setFormatter(stream_formatter)
+stream_handler.setLevel(logging.DEBUG)   # DEBUG+ to console
+# ------------------------
+# Add handlers to logger
+# ------------------------
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
