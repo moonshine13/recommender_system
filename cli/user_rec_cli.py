@@ -24,7 +24,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--rec_type",
-        rec_type=str,
+        type=str,
         default="user_based_with_time",
         choices=["user_based", "user_based_with_time"],
         help="Type of recommendation",

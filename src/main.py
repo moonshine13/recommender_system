@@ -12,8 +12,6 @@ from fastapi import FastAPI
 
 from src.api.endpoints import model_rec, top_products, user_rec
 
-## TODO add readme
-
 app = FastAPI(title="Recommendation API")
 
 app.include_router(user_rec.router, prefix="/recommend/user", tags=["user-based"])

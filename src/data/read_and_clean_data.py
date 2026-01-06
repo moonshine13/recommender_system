@@ -105,58 +105,6 @@ def load_data(path: str) -> List[Dict[str, Any]]:
 
 
 # Data cleaning
-def clean_data_slow(rows: List[Dict]) -> List[Dict]:
-    """
-    Impute invalid ratings (-1, 99) in a list of dicts
-    using hybrid baseline:
-        r_hat = global_mean + (user_mean - global_mean) + (item_mean - global_mean)
-    Impute invalid timestamps (0) in a list of dicts using min positive timestamp from dataset.
-    """
-    # Compute min positive timestamp
-    positive_timestamps = [r["timestamp"] for r in rows if r["timestamp"] > 0]
-    min_positive_ts = (
-        min(positive_timestamps) if positive_timestamps else 1
-    )  # fallback to 1
-
-    # Collect ratings for global/user/product, ignoring invalid ratings
-    valid_ratings = [r["rating"] for r in rows if 0 <= r["rating"] <= 5]
-
-    if not valid_ratings:
-        global_mean = 2.5
-    else:
-        global_mean = sum(valid_ratings) / len(valid_ratings)
-
-    # Compute user means
-    user_ratings = {}
-    for r in rows:
-        if 0 <= r["rating"] <= 5:
-            user_ratings.setdefault(r["user_id"], []).append(r["rating"])
-    user_mean = {u: sum(vals) / len(vals) for u, vals in user_ratings.items()}
-
-    # Compute item (product) means
-    item_ratings = {}
-    for r in rows:
-        if 0 <= r["rating"] <= 5:
-            item_ratings.setdefault(r["product_id"], []).append(r["rating"])
-    item_mean = {i: sum(vals) / len(vals) for i, vals in item_ratings.items()}
-
-    # Imputation
-    for r in rows:
-        # Replace timestamp 0 with min positive timestamp
-        ts = r["timestamp"] if r["timestamp"] > 0 else min_positive_ts
-        ts_dt = datetime.fromtimestamp(ts, tz=timezone.utc)
-        r["timestamp"] = ts_dt
-
-        rating = r["rating"]
-        if not 0 <= rating <= 5:  # -1, 99, or other invalid
-            u_mean = user_mean.get(r["user_id"], global_mean)
-            i_mean = item_mean.get(r["product_id"], global_mean)
-            r["rating"] = global_mean + (u_mean - global_mean) + (i_mean - global_mean)
-            # Clip to 0-5
-            r["rating"] = max(0, min(5, r["rating"]))
-    return rows
-
-
 def clean_data(rows: List[Dict]) -> List[Dict]:
     """
     Impute missing or invalid ratings (-1, 99, etc.) in a list of dicts
