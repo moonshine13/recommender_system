@@ -3,6 +3,9 @@
 **Description**  
 Recommends globally popular products within a recent time window.
 
+**Assumptions**
+- The 'current timestamp' used in data preprocessing is the maximum timestamp present in the dataset - NOT current system timestamp.
+
 **Steps**
 1. Filter recent ratings.
 2. Aggregate rating counts and averages.

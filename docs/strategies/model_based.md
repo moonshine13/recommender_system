@@ -3,6 +3,9 @@
 **Description**  
 Latent factor model with temporal dynamics and implicit feedback, trained using stochastic gradient descent.
 
+**Assumptions**
+- The 'current timestamp' used in data preprocessing and by default in inference is the maximum timestamp present in the dataset - NOT current system timestamp.
+
 **Steps**
 1. Encode users and items.
 2. Normalize timestamps.

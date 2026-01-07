@@ -3,6 +3,9 @@
 **Description**  
 Extends user-based filtering by weighting ratings with exponential time decay.
 
+**Assumptions**
+- The 'current timestamp' used in data preprocessing is the maximum timestamp present in the dataset - NOT current system timestamp.
+
 **Steps**
 1. Load ratings with timestamps.
 2. Apply exponential decay to older ratings.
