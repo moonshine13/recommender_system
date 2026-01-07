@@ -13,7 +13,9 @@ import pickle
 import os
 
 from src.data.read_and_clean_data import load_and_clean_data
-from src.models.timesvdpp import TimeSVDppVectorized
+## from src.models.timesvdpp import TimeSVDppVectorized
+from src.models.timesvdpp2 import TimeSVDppModel, TimeSVDppTrainer
+
 from src.recommender.model_based.model_based_recommendations_data_preprocessing import (
     leave_last_out_split,
     preprocess_data,
@@ -46,10 +48,16 @@ def main(path: str, out_path: str):
     print("Train Ratings:\n", len(train_ratings))
     print("Test Ratings:\n", len(test_ratings))
 
-    model = None
-    model = TimeSVDppVectorized(n_factors=20, n_epochs=50, lr=0.01, reg=0.05)
+    ## model = None
+    ## model = TimeSVDppVectorized(n_factors=20, n_epochs=50, lr=0.01, reg=0.05)
+    ## model.fit(train_ratings, test_ratings)
 
-    model.fit(train_ratings, test_ratings)
+    n_users = int(train_ratings[:, 0].max() + 1)
+    n_items = int(train_ratings[:, 1].max() + 1)
+    
+    model = TimeSVDppModel(n_users, n_items, n_factors=20)
+    trainer = TimeSVDppTrainer(model, lr=0.01, reg=0.05, n_epochs=50)
+    trainer.fit(train_ratings, test_ratings)
 
     model.user_map = user_map
     model.item_map = item_map
@@ -69,3 +77,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(path=args.path, out_path=args.out_path)
+

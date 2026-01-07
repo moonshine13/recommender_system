@@ -116,7 +116,7 @@ def user_based_recommendations_with_time(
     Generate top-N user-based recommendations with timestamp weighting.
 
     Older ratings are downweighted exponentially based on recency:
-        weight = exp(-Δt / τ)
+        weight = exp(-Δt*log2 / τ)
 
     Args:
         data (list of dict): List of ratings with keys "user_id", "product_id", "rating", "timestamp".
