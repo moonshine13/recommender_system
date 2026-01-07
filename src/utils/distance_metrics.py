@@ -23,3 +23,4 @@ def cosine_similarity(u: Dict[str, float], v: Dict[str, float]) -> float:
         return 0.0
 
     return numerator / (norm_u * norm_v)
+

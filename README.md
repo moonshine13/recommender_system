@@ -1,6 +1,35 @@
-# Recommender System – Quick Start
+# Recommender System
 
-A Python recommendation system supporting **user-based**, **time-aware user-based**, **model-based recommendations**, and **top-N products**. Works via **CLI** or **FastAPI**.
+A Python-based recommendation system supporting **user-based**, **time-aware user-based**, **model-based (TimeSVD++)**, and **top-N popularity-based** recommendations.  
+The system can be used via **CLI** or exposed as a **FastAPI service**.
+
+## Documentation
+  Data preparation.
+  [Details](docs/data_preparation.md)
+
+  Architecture.
+  [Details](docs/architecture.md)
+
+  Recommendation strategies
+- **User-Based Collaborative Filtering**  
+
+  Memory-based method using cosine similarity between users.
+  [Details](docs/strategies/user_based.md)
+
+- **Time-Aware User-Based Filtering**  
+
+  Extends user-based CF by applying temporal decay to older interactions.  
+  [Details](docs/strategies/user_based_time_aware.md)
+
+- **Model-Based (TimeSVD++)**  
+
+  Latent factor model incorporating implicit feedback and temporal dynamics.  
+  [Details](docs/strategies/model_based.md)
+
+- **Top-N Products**  
+
+  Popularity-based baseline using recent average ratings.  
+  [Details](docs/strategies/top_n_products.md)
 
 ---
 
