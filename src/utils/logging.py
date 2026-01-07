@@ -7,8 +7,12 @@ consistent logging format and levels.
 """
 
 import logging
+import os
 import sys
 from logging.handlers import RotatingFileHandler
+
+# Ensure the logs directory exists
+os.makedirs("./logs", exist_ok=True)  # <-- this line creates the folder if it doesn't exist
 
 # Create logger
 logger = logging.getLogger("recommender_app")
